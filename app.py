@@ -47,16 +47,35 @@ st.markdown(
     }
 
     /* ボタン（上下広がり改善） */
-    .stButton>button {
+        .stButton>button {
         width: 100% !important;
         background-color: #ffffff !important;
-        border: 1px solid #CCC !important;
+        border: 2px solid #FFA726 !important;
         color: #333 !important;
         border-radius: 12px !important;
         padding: 12px !important;
         font-size: 1.05rem !important;
         margin-top: 5px !important;
         margin-bottom: 6px !important;
+        cursor: pointer !important;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.15) !important;
+        transition: 0.12s ease-in-out !important;
+    }
+
+    /* ホバー時：ふわっと明るく */
+    .stButton>button:hover {
+        background-color: #FFF3D6 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.20) !important;
+        border-color: #FF8A00 !important;
+    }
+
+    /* 押したとき：沈む感じ */
+    .stButton>button:active {
+        transform: translateY(1px) !important;
+        box-shadow: 0 2px 3px rgba(0,0,0,0.12) !important;
+        background-color: #FFE9C4 !important;
+        border-color: #F57C00 !important;
     }
 
     /* プログレスバー太く */
@@ -262,7 +281,7 @@ if not st.session_state.finished:
 else:
     winner = compute_scores(st.session_state.answers)
 
-    st.markdown("### 🎉診断完了！あなたにぴったりの柑橘は…")
+    st.markdown("### 診断完了！\nあなたにぴったりの柑橘は…")
     st.header(winner)
     st.image(VARIETY_IMG[winner], use_container_width=True)
 
