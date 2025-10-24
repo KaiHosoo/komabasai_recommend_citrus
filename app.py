@@ -13,7 +13,6 @@ st.set_page_config(page_title="推しみかん診断", page_icon="🍊", layout=
 st.markdown(
     """
     <style>
-
     body {
         background-color: #FFF9ED;
         margin: 0;
@@ -26,14 +25,7 @@ st.markdown(
         background-color: #FFF9ED;
     }
 
-    h1 {
-        text-align: center !important;
-        margin-top: 10px !important;
-        margin-bottom: 15px !important;
-        font-weight: 800 !important;
-    }
-
-    /* カード風選択肢 */
+    /* 選択肢 */
     .stRadio > div > label {
         background-color: #fff !important;
         padding: 14px 12px !important;
@@ -50,7 +42,6 @@ st.markdown(
         border-color: #FFA726 !important;
     }
 
-    /* ボタン美化 */
     .stButton>button {
         width: 100% !important;
         background-color: #ffffff !important;
@@ -62,23 +53,17 @@ st.markdown(
         margin-top: 4px !important;
     }
 
-    .stButton>button:hover {
-        background-color: #FFF3D6 !important;
-        border-color: #FFA726 !important;
-    }
-
     /* プログレスバー */
     div[data-testid="stProgressBar"] > div > div {
         height: 14px !important;
         border-radius: 8px !important;
     }
 
-    /* 余計な白バー除去（Critical）*/
+    /* 余計な白バー除去 */
     div[data-testid="stProgressBar"] > div:first-child {
         display: none !important;
     }
 
-    /* プログレステキスト */
     span[data-testid="stProgressText"] {
         text-align: center !important;
         display: block !important;
@@ -87,7 +72,6 @@ st.markdown(
         color: #444 !important;
     }
 
-    /* 質問ヘッダー */
     .question-header {
         text-align: center !important;
         font-size: 1.25rem !important;
@@ -97,11 +81,11 @@ st.markdown(
         color: #333 !important;
         line-height: 1.5 !important;
     }
-
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 # ----------------------------------------------------------
 # 質問データ
@@ -230,25 +214,33 @@ if not st.session_state.finished:
     idx = st.session_state.step
     q = QUESTIONS[idx]
 
-    question_text = q["q"]
-    st.markdown(f'<div class="question-header">{question_text}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="question-header">{q["q"]}</div>', unsafe_allow_html=True)
 
-    opts = list(q["options"].keys())
-    choice = st.radio("", options=opts)
+    # ✅ダミー選択肢を先頭に追加
+    options = ["▼ 選択してください"] + list(q["options"].keys())
 
-    # 戻るボタン
+    # ✅前の回答があれば反映
+    prev = st.session_state.answers.get(q["id"], None)
+    index = options.index(prev) if prev in options else 0
+
+    choice = st.radio("", options=options, index=index)
+
+    # 前ページへ
     if idx > 0:
         if st.button("← 戻る"):
             st.session_state.step -= 1
 
-    # 次へ / 結果へ
+    # 次へ
     label = "診断結果を見る" if idx == len(QUESTIONS) - 1 else "次へ →"
-    if st.button(label, disabled=(choice is None)):
-        st.session_state.answers[q["id"]] = choice
-        if idx + 1 < len(QUESTIONS):
-            st.session_state.step += 1
-        else:
-            st.session_state.finished = True
+
+    # ✅本物の選択肢が選ばれたときだけ進行
+    if st.button(label, disabled=(choice == "▼ 選択してください")):
+        if choice != "▼ 選択してください":
+            st.session_state.answers[q["id"]] = choice
+            if idx + 1 < len(QUESTIONS):
+                st.session_state.step += 1
+            else:
+                st.session_state.finished = True
 
 # ----------------------------------------
 # 結果ページ
