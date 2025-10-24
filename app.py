@@ -216,32 +216,30 @@ if not st.session_state.finished:
 
     st.markdown(f'<div class="question-header">{q["q"]}</div>', unsafe_allow_html=True)
 
-    # ✅ダミー選択肢を先頭に追加
-    options = ["▼ 選択してください"] + list(q["options"].keys())
+    opts = list(q["options"].keys())
 
-    # ✅前の回答があれば反映
+    # ✅ 未選択は None として扱う
     prev = st.session_state.answers.get(q["id"], None)
-    index = options.index(prev) if prev in options else 0
 
-    choice = st.radio("", options=options, index=index)
+    # ✅ index は指定せず → 自動選択防止！
+    choice = st.radio("", options=opts, index=None, key=f"q{idx}")
 
-    # 前ページへ
+    # 戻るボタン
     if idx > 0:
         if st.button("← 戻る"):
             st.session_state.step -= 1
 
-    # 次へ
+    # 次へ or 結果へ
     label = "診断結果を見る" if idx == len(QUESTIONS) - 1 else "次へ →"
 
-    # ✅本物の選択肢が選ばれたときだけ進行
-    if st.button(label, disabled=(choice == "▼ 選択してください")):
-        if choice != "▼ 選択してください":
+    # ✅ choice が None（未選択）の場合ボタン無効
+    if st.button(label, disabled=(choice is None)):
+        if choice is not None:
             st.session_state.answers[q["id"]] = choice
             if idx + 1 < len(QUESTIONS):
                 st.session_state.step += 1
             else:
                 st.session_state.finished = True
-
 # ----------------------------------------
 # 結果ページ
 # ----------------------------------------
