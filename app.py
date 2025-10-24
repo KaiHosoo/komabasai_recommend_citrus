@@ -20,20 +20,24 @@ st.markdown(
         font-family: "Helvetica Neue", sans-serif;
     }
 
+    /* 全体コンテナ調整（中央＋スマホ整列） */
     .stApp {
-        padding: 20px 12px !important;
+        padding: 16px 12px !important;
         background-color: #FFF9ED;
+        max-width: 520px;     /* ✅ スマホでも読みやすい横幅 */
+        margin-left: auto;
+        margin-right: auto;
     }
 
-    /* 選択肢 */
+    /* 選択肢スタイル（カード風） */
     .stRadio > div > label {
-        background-color: #fff !important;
-        padding: 14px 12px !important;
+        background-color: #ffffff !important;
+        padding: 13px 10px !important;
         border-radius: 10px;
         border: 1px solid #EBEBEB;
         margin-bottom: 10px;
         text-align: center !important;
-        font-size: 1.05rem;
+        font-size: 1rem;
         width: 100% !important;
     }
 
@@ -42,6 +46,7 @@ st.markdown(
         border-color: #FFA726 !important;
     }
 
+    /* ボタン */
     .stButton>button {
         width: 100% !important;
         background-color: #ffffff !important;
@@ -50,7 +55,7 @@ st.markdown(
         border-radius: 12px !important;
         padding: 12px !important;
         font-size: 1.05rem !important;
-        margin-top: 4px !important;
+        margin-top: 5px !important;
     }
 
     /* プログレスバー */
@@ -58,8 +63,6 @@ st.markdown(
         height: 14px !important;
         border-radius: 8px !important;
     }
-
-    /* 余計な白バー除去 */
     div[data-testid="stProgressBar"] > div:first-child {
         display: none !important;
     }
@@ -68,24 +71,31 @@ st.markdown(
         text-align: center !important;
         display: block !important;
         font-size: 0.92rem;
-        margin-bottom: 4px !important;
+        margin-bottom: 3px !important;
         color: #444 !important;
     }
 
+    /* 質問のタイトル */
     .question-header {
         text-align: center !important;
-        font-size: 1.25rem !important;
+        font-size: 1.2rem !important;
         font-weight: 700 !important;
-        margin-top: 10px !important;
-        margin-bottom: 16px !important;
+        margin-top: 6px !important;
+        margin-bottom: 12px !important;
         color: #333 !important;
-        line-height: 1.5 !important;
+        line-height: 1.4 !important;
     }
+
+    h1 {
+        text-align: center !important;
+        margin-bottom: 18px !important;
+        font-weight: 800 !important;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
 )
-
 
 # ----------------------------------------------------------
 # 質問データ
@@ -201,7 +211,7 @@ st.title("🍊 推しみかん診断")
 # トップページ
 # ----------------------------------------
 if not st.session_state.started:
-    st.write("あなたにぴったりの柑橘を診断します😆")
+    st.write("あなたにぴったりの柑橘を診断します！\n\n12個の質問に答えて、あなただけの『推しみかん』を見つけましょう🍊✨")
     if st.button("診断を開始する"):
         st.session_state.started = True
     st.stop()
