@@ -1,8 +1,3 @@
-# ✅ 推しみかん診断（Streamlit 完全修正版）
-# ----------------------------------------------------------
-# app.py（このまま保存してOK）
-# ----------------------------------------------------------
-
 import streamlit as st
 import altair as alt
 from collections import defaultdict
@@ -127,18 +122,18 @@ QUESTIONS = [
 
 VARIETIES = ["温州みかん", "不知火", "せとか", "甘平", "甘夏", "ブラッドオレンジ"]
 
-# 結果表示用 ローカルPDF
+# 結果PDF
 VARIETY_IMG = {
     "温州みかん": "citrus_images/推しみかん診断_page_温州みかん.pdf",
-    "不知火": "citrus_images/推しみかん診断_page_不知火.pdf",
-    "せとか": "citrus_images/推しみかん診断_page_せとか.pdf",
-    "甘平": "citrus_images/推しみかん診断_page_甘平.pdf",
-    "甘夏": "citrus_images/推しみかん診断_page_甘夏.pdf",
+    "不知火":     "citrus_images/推しみかん診断_page_不知火.pdf",
+    "せとか":     "citrus_images/推しみかん診断_page_せとか.pdf",
+    "甘平":       "citrus_images/推しみかん診断_page_甘平.pdf",
+    "甘夏":       "citrus_images/推しみかん診断_page_甘夏.pdf",
     "ブラッドオレンジ": "citrus_images/推しみかん診断_page_ブラッドオレンジ.pdf",
 }
 
 # ----------------------------------------------------------
-# ユーティリティ
+# セッション管理
 # ----------------------------------------------------------
 def init_state():
     if "step" not in st.session_state:
@@ -154,9 +149,145 @@ def reset_all():
     st.session_state.clear()
     init_state()
 
-
+# ----------------------------------------------------------
+# スコア計算
+# ----------------------------------------------------------
 def compute_scores(answers_dict):
     scores = defaultdict(int)
     hi = defaultdict(int)
-    lo = defaultdict
+    lo = defaultdict(int)
 
+    for qid, opt in answers_dict.items():
+        q = next(q for q in QUESTIONS if q["id"] == qid)
+        mapping = q["options"][opt]
+        for variety, pt in mapping.items():
+            scores[variety] += pt
+            if pt >= 2:
+                hi[variety] += pt
+            else:
+                lo[variety] += pt
+
+    if scores:
+        max_total = max(scores.values())
+        candidates = [v for v, s in scores.items() if s == max_total]
+
+        # tie-break 1: high-point
+        if len(candidates) > 1:
+            max_hi = max(hi[v] for v in candidates)
+            candidates = [v for v in candidates if hi[v] == max_hi]
+
+        # tie-break 2: low-point
+        if len(candidates) > 1:
+            max_lo = max(lo[v] for v in candidates)
+            candidates = [v for v in candidates if lo[v] == max_lo]
+
+        # tie-break 3: defined order
+        if len(candidates) > 1:
+            for v in VARIETIES:
+                if v in candidates:
+                    winner = v
+                    break
+        else:
+            winner = candidates[0]
+    else:
+        winner = None
+
+    return dict(scores), winner, dict(hi), dict(lo)
+
+# ----------------------------------------------------------
+# プログレスバー
+# ----------------------------------------------------------
+def render_progress():
+    total = len(QUESTIONS)
+    step = st.session_state.step
+    st.progress(step / total, text=f"進捗: {step}/{total} 問回答済み")
+
+# ----------------------------------------------------------
+# UI開始
+# ----------------------------------------------------------
+init_state()
+
+st.title("🍊 推しみかん診断")
+
+# ---------------- トップページ ----------------
+if not st.session_state.started:
+    st.write("あなたにぴったりの柑橘を診断します！")
+    if st.button("診断を開始する", use_container_width=True):
+        st.session_state.started = True
+        st.rerun()
+    st.stop()
+
+# ---------------- 質問画面 ----------------
+if not st.session_state.finished:
+    render_progress()
+    idx = st.session_state.step
+    total = len(QUESTIONS)
+
+    if idx < total:
+        q = QUESTIONS[idx]
+        st.subheader(f"{q['id']}  {q['q']}")
+        opts = list(q["options"].keys())
+
+        prev = st.session_state.answers.get(q["id"], None)
+        choice = st.radio("選択肢を選んでください",
+                          options=opts,
+                          index=opts.index(prev) if prev in opts else None)
+
+        cols = st.columns(2)
+        with cols[0]:
+            if st.button("← 戻る", use_container_width=True, disabled=(idx == 0)):
+                if idx > 0:
+                    st.session_state.step -= 1
+                st.rerun()
+        with cols[1]:
+            if st.button("次へ →", use_container_width=True, disabled=(choice is None)):
+                st.session_state.answers[q["id"]] = choice
+                if idx + 1 < total:
+                    st.session_state.step += 1
+                else:
+                    st.session_state.finished = True
+                st.rerun()
+
+# ---------------- 結果画面 ----------------
+else:
+    scores, winner, hi, lo = compute_scores(st.session_state.answers)
+
+    st.success("診断が完了しました！ あなたの推しみかんは・・・")
+
+    if winner:
+        st.header(f"🎉 {winner}")
+        img_path = VARIETY_IMG.get(winner)
+        if img_path:
+            st.pdf(img_path)
+    else:
+        st.warning("スコアがありません。最初からやり直してください。")
+
+    # スコア可視化
+    st.subheader("スコア内訳")
+    chart_data = [{"品種": v, "合計": scores.get(v, 0)} for v in VARIETIES]
+    chart = (
+        alt.Chart(alt.Data(values=chart_data))
+        .mark_bar()
+        .encode(x=alt.X("品種:N", sort=VARIETIES),
+                y=alt.Y("合計:Q"))
+        .properties(height=260)
+    )
+    st.altair_chart(chart, use_container_width=True)
+
+    # 回答確認
+    with st.expander("あなたの回答", expanded=False):
+        for q in QUESTIONS:
+            ans = st.session_state.answers.get(q["id"], "-")
+            st.write(f"{q['id']}: {q['q']}\n- あなたの選択: {ans}")
+
+    st.divider()
+    cols = st.columns([1,1])
+    with cols[0]:
+        if st.button("もう一度診断する", use_container_width=True):
+            reset_all()
+            st.rerun()
+    with cols[1]:
+        if st.button("最初に戻る", use_container_width=True):
+            st.session_state.finished = False
+            st.session_state.step = 0
+            st.rerun()
