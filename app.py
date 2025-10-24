@@ -8,60 +8,73 @@ import random
 st.set_page_config(page_title="推しみかん診断", page_icon="🍊", layout="centered")
 
 # ----------------------------------------------------------
-# 柑橘テーマCSS（背景淡オレンジ、UI整形）
+# CSS（スマホ対応強化）
 # ----------------------------------------------------------
 st.markdown(
     """
     <style>
     body {
         background-color: #FFF5E6;
-        margin-top: 20px;
-        margin-bottom: 20px;
-        margin-left: 40px;
-        margin-right: 40px;
+        margin: 0;
+        padding: 0;
     }
+
+    /* 全体のコンテナ余白をスマホ寄りに */
     .stApp {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        padding-top: 20px !important;
         background-color: #FFF5E6;
     }
 
-    /* ▶ ボタン白化 */
+    /* タイトルをスマホサイズに調整 */
+    .st-emotion-cache-1wivap2 {
+        font-size: 1.8rem !important;
+    }
+
+    /* ボタン大きめタッチ領域 */
     .stButton>button {
         background-color: white !important;
         color: black !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
         border: 1px solid #CCC !important;
-        box-shadow: none !important;
+        padding: 12px 0 !important;
+        font-size: 1.1rem !important;
+        width: 100% !important;
     }
 
-    /* ▶ 選択肢白化 */
+    /* ラジオボタン：タッチ領域拡大 */
     .stRadio > div > label {
         background-color: white !important;
-        padding: 6px 10px;
-        border-radius: 6px;
+        padding: 12px 12px !important;
+        border-radius: 8px;
         border: 1px solid #DDD;
+        margin-bottom: 6px;
+        font-size: 1.05rem !important;
+        display: block !important;
     }
 
-    /* ▶ 進捗テキスト装飾 */
-    span[data-testid="stProgressText"] {
-        color: #333 !important;
-        font-weight: 600 !important;
+    /* プログレスバー太く */
+    div[data-testid="stProgressBar"] > div > div {
+        height: 14px !important;
+        border-radius: 8px !important;
     }
 
-    /* ▶ 余計な白い背景トラックバーを完全除去（今回の主目的！） */
+    /* 余計なバー消去 */
     div[data-testid="stProgressBar"] > div:first-child {
         display: none !important;
     }
 
-    /* ▶ 青バー本体の見栄え調整 */
-    div[data-testid="stProgressBar"] > div > div {
-        border-radius: 8px !important;
+    /* 進捗テキスト */
+    span[data-testid="stProgressText"] {
+        font-size: 0.9rem !important;
+        color: #444 !important;
     }
 
-    /* ▶ 進捗ラップの背景を透明化 */
-    .progress-wrap {
-        background-color: transparent !important;
-        padding: 4px 0px;
-        margin-bottom: 8px;
+    /* 質問文字サイズ */
+    h2, .stSubheader {
+        font-size: 1.2rem !important;
+        line-height: 1.3 !important;
     }
     </style>
     """,
@@ -84,17 +97,21 @@ QUESTIONS = [
      "options": {"皮がむきやすいこと": {"温州みかん": 2, "不知火": 2},
                  "香りや風味が良いこと": {"甘夏": 2, "ブラッドオレンジ": 2},
                  "種がないこと": {"せとか": 2, "甘平": 2}}},
+
     {"id": "Q4", "q": "みかんの見た目で惹かれるのは？",
      "options": {"小ぶりでかわいいサイズ感": {"温州みかん": 2},
                  "ふっくら丸くて存在感のあるもの": {"不知火": 2, "甘夏": 2, "ブラッドオレンジ": 2},
                  "濃い色で『美味しそう！』と思えるもの": {"せとか": 2, "甘平": 2}}},
+
     {"id": "Q5", "q": "柑橘の食べ方は？",
      "options": {"そのままが一番！": {"温州みかん": 2, "甘平": 2},
                  "柑橘スイーツ大好き！": {"不知火": 2, "せとか": 2},
                  "料理に入れてみたい！": {"甘夏": 2, "ブラッドオレンジ": 2}}},
+
     {"id": "Q6", "q": "あなたが求める人生は？",
      "options": {"刺激のある人生": {"せとか": 1, "甘平": 1, "ブラッドオレンジ": 1},
                  "安定な人生": {"温州みかん": 1, "不知火": 1, "甘夏": 1}}},
+
     {"id": "Q7", "q": "好きな季節は？",
      "options": {"春": {"甘平": 1, "ブラッドオレンジ": 1},
                  "夏": {"甘夏": 1},
@@ -121,6 +138,7 @@ QUESTIONS = [
                  "小さなお菓子を5個": {"温州みかん": 1}}}
 ]
 
+# 表示画像
 VARIETY_IMG = {
     "温州みかん": "citrus_images/推しみかん診断_page_温州みかん.png",
     "不知火": "citrus_images/推しみかん診断_page_不知火.png",
@@ -148,7 +166,7 @@ def reset_all():
     init_state()
 
 # ----------------------------------------------------------
-# 同点ランダム含むスコア計算
+# スコア計算
 # ----------------------------------------------------------
 def compute_scores(answers_dict):
     scores = defaultdict(int)
@@ -159,24 +177,17 @@ def compute_scores(answers_dict):
         for variety, pt in mapping.items():
             scores[variety] += pt
 
-    if scores:
-        max_total = max(scores.values())
-        candidates = [v for v, s in scores.items() if s == max_total]
-        winner = random.choice(candidates)
-    else:
-        winner = None
-
-    return winner
+    max_total = max(scores.values())
+    candidates = [v for v, s in scores.items() if s == max_total]
+    return random.choice(candidates)
 
 # ----------------------------------------------------------
-# プログレスバー表示
+# プログレスバー
 # ----------------------------------------------------------
 def render_progress():
     total = len(QUESTIONS)
     step = st.session_state.step
-    st.markdown('<div class="progress-wrap">', unsafe_allow_html=True)
-    st.progress(step / total, text=f"進捗: {step}/{total} 問回答済み")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.progress(step / total, text=f"進捗: {step}/{total}")
 
 # ----------------------------------------------------------
 # UI開始
@@ -198,47 +209,41 @@ if not st.session_state.finished:
     idx = st.session_state.step
     total = len(QUESTIONS)
 
-    if idx < total:
-        q = QUESTIONS[idx]
-        st.subheader(f"{q['id']}  {q['q']}")
-        opts = list(q["options"].keys())
+    q = QUESTIONS[idx]
+    st.subheader(f"{q['id']}  {q['q']}")
 
-        prev = st.session_state.answers.get(q["id"], None)
-        choice = st.radio("選択肢を選んでください",
-                          options=opts,
-                          index=opts.index(prev) if prev in opts else None)
+    opts = list(q["options"].keys())
+    prev = st.session_state.answers.get(q["id"], None)
+    choice = st.radio("",
+                      options=opts,
+                      index=opts.index(prev) if prev in opts else None)
 
-        cols = st.columns(2)
-        with cols[0]:
-            if st.button("← 戻る", disabled=(idx == 0)):
-                if idx > 0:
-                    st.session_state.step -= 1
-                st.rerun()
-        with cols[1]:
-            label = "診断結果を見る" if idx + 1 == total else "次へ →"
-            if st.button(label, disabled=(choice is None)):
-                st.session_state.answers[q["id"]] = choice
-                if idx + 1 < total:
-                    st.session_state.step += 1
-                else:
-                    st.session_state.finished = True
-                st.rerun()
+    # ナビゲーション
+    if idx > 0:
+        st.button("← 戻る",
+                  on_click=lambda: (setattr(st.session_state, "step", idx - 1), st.rerun()),
+                  use_container_width=True)
+
+    label = "診断結果を見る" if idx + 1 == total else "次へ →"
+    st.button(label,
+              disabled=(choice is None),
+              on_click=lambda: (
+                  st.session_state.answers.update({q["id"]: choice}),
+                  setattr(st.session_state, "step", idx + 1)
+                  if idx + 1 < total
+                  else setattr(st.session_state, "finished", True),
+                  st.rerun()
+              ),
+              use_container_width=True)
 
 # ---------------- 結果画面 ----------------
 else:
     winner = compute_scores(st.session_state.answers)
-
-    st.success("診断が完了しました！ あなたの推しみかんは・・・")
-
-    if winner:
-        st.header(f" {winner}")
-        st.image(VARIETY_IMG[winner])
-    else:
-        st.warning("最初からやり直してください。")
+    st.success("診断完了！あなたの推しみかんは…")
+    st.header(winner)
+    st.image(VARIETY_IMG[winner], use_container_width=True)
 
     st.divider()
-    cols = st.columns([1,1])
-    with cols[1]:
-        if st.button("もう一度診断する"):
-            reset_all()
-            st.rerun()
+    if st.button("もう一度診断する", use_container_width=True):
+        reset_all()
+        st.rerun()
