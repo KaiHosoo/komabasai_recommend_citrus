@@ -5,7 +5,7 @@ import random
 # ----------------------------------------------------------
 # ページ設定
 # ----------------------------------------------------------
-st.set_page_config(page_title="推しみかん診断\n 🍊🍊🍊🍊🍊🍊🍊", layout="centered")
+st.set_page_config(page_title="推しみかん診断", layout="centered")
 
 # ----------------------------------------------------------
 # CSS（レスポンシブ美デザイン＋中央寄せ＋スマホ最適化）
@@ -205,15 +205,19 @@ def render_progress():
 # UI開始
 # ----------------------------------------------------------
 init_state()
-st.title("🍊 推しみかん診断")
+st.title("推しみかん診断")
 
 # ----------------------------------------
 # トップページ
 # ----------------------------------------
 if not st.session_state.started:
     st.write("あなたにぴったりの柑橘を診断します！\n\n12個の質問に答えて、あなただけの『推しみかん』を見つけましょう🍊✨")
-    if st.button("診断を開始する"):
-        st.session_state.started = True
+    
+    # ✅ 中央揃え配置
+    c1, c2, c3 = st.columns([1,2,1])
+    with c2:
+        if st.button("診断を開始する"):
+            st.session_state.started = True
     st.stop()
 
 # ----------------------------------------
@@ -228,28 +232,28 @@ if not st.session_state.finished:
 
     opts = list(q["options"].keys())
 
-    # ✅ 未選択は None として扱う
     prev = st.session_state.answers.get(q["id"], None)
-
-    # ✅ index は指定せず → 自動選択防止！
     choice = st.radio("", options=opts, index=None, key=f"q{idx}")
 
-    # 戻るボタン
-    if idx > 0:
-        if st.button("← 戻る"):
-            st.session_state.step -= 1
+    # ✅ 横並びボタン
+    col1, col2 = st.columns(2)
 
-    # 次へ or 結果へ
+    # 戻るボタン（左）
+    with col1:
+        if idx > 0:
+            if st.button("← 戻る"):
+                st.session_state.step -= 1
+
+    # 次へ or 結果へ ボタン（右）
     label = "診断結果を見る" if idx == len(QUESTIONS) - 1 else "次へ →"
-
-    # ✅ choice が None（未選択）の場合ボタン無効
-    if st.button(label, disabled=(choice is None)):
-        if choice is not None:
-            st.session_state.answers[q["id"]] = choice
-            if idx + 1 < len(QUESTIONS):
-                st.session_state.step += 1
-            else:
-                st.session_state.finished = True
+    with col2:
+        if st.button(label, disabled=(choice is None)):
+            if choice is not None:
+                st.session_state.answers[q["id"]] = choice
+                if idx + 1 < len(QUESTIONS):
+                    st.session_state.step += 1
+                else:
+                    st.session_state.finished = True
 # ----------------------------------------
 # 結果ページ
 # ----------------------------------------
