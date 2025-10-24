@@ -173,7 +173,7 @@ if not st.session_state.finished:
     idx = st.session_state.step
     q = QUESTIONS[idx]
 
-    st.markdown(f"<div class='question-header'>{q['q']}</div>", unsafe_allow_html=True)
+    st.markdown(f'<div class="question-header">{q["q"]}</div>', unsafe_allow_html=True)
 
     opts = list(q["options"].keys())
     choice = st.radio("", options=opts)
