@@ -8,74 +8,108 @@ import random
 st.set_page_config(page_title="推しみかん診断", page_icon="🍊", layout="centered")
 
 # ----------------------------------------------------------
-# CSS（スマホ対応強化）
+# CSS（レスポンシブ美デザイン）
 # ----------------------------------------------------------
 st.markdown(
     """
     <style>
+
     body {
-        background-color: #FFF5E6;
+        background-color: #FFF9ED;
         margin: 0;
         padding: 0;
+        font-family: "Helvetica Neue", sans-serif;
     }
 
-    /* 全体のコンテナ余白をスマホ寄りに */
+    /* 全体コンテナの余白 */
     .stApp {
-        padding-left: 10px !important;
-        padding-right: 10px !important;
-        padding-top: 20px !important;
-        background-color: #FFF5E6;
+        padding: 20px 12px !important;
+        background-color: #FFF9ED;
     }
 
-    /* タイトルをスマホサイズに調整 */
-    .st-emotion-cache-1wivap2 {
-        font-size: 1.8rem !important;
+    /* タイトル余白 */
+    h1 {
+        text-align: center !important;
+        margin-top: 10px !important;
+        margin-bottom: 15px !important;
+        font-weight: 800 !important;
     }
 
-    /* ボタン大きめタッチ領域 */
-    .stButton>button {
-        background-color: white !important;
-        color: black !important;
+    /* カード風 選択肢 */
+    .choice-card {
+        background-color: #ffffff !important;
+        padding: 16px 12px !important;
         border-radius: 10px !important;
-        border: 1px solid #CCC !important;
-        padding: 12px 0 !important;
-        font-size: 1.1rem !important;
-        width: 100% !important;
-    }
-
-    /* ラジオボタン：タッチ領域拡大 */
-    .stRadio > div > label {
-        background-color: white !important;
-        padding: 12px 12px !important;
-        border-radius: 8px;
-        border: 1px solid #DDD;
-        margin-bottom: 6px;
+        border: 1px solid #EBEBEB !important;
+        margin-bottom: 10px !important;
+        text-align: center !important;
         font-size: 1.05rem !important;
-        display: block !important;
     }
 
-    /* プログレスバー太く */
+    /* hover効果 */
+    .choice-card:hover {
+        border-color: #FFA726 !important;
+        background-color: #FFF4E2 !important;
+    }
+
+    /* ラジオボタンのラベルをカード化 */
+    .stRadio > div {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+
+    .stRadio > div > label {
+        width: 92% !important;
+    }
+
+    /* ボタン幅100%＆美デザイン */
+    .stButton > button {
+        width: 100% !important;
+        background-color: #ffffff !important;
+        border: 1px solid #CCC !important;
+        color: #333 !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        font-size: 1.1rem !important;
+        margin-top: 4px !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #FFF3D6 !important;
+        border-color: #FFA726 !important;
+    }
+
+    /* プログレスバー本体 */
     div[data-testid="stProgressBar"] > div > div {
         height: 14px !important;
         border-radius: 8px !important;
     }
 
-    /* 余計なバー消去 */
+    /* 不要バー除去 */
     div[data-testid="stProgressBar"] > div:first-child {
         display: none !important;
     }
 
-    /* 進捗テキスト */
+    /* プログレステキスト */
     span[data-testid="stProgressText"] {
-        font-size: 0.9rem !important;
+        text-align: center !important;
+        display: block !important;
+        font-size: 0.92rem;
+        margin-bottom: 4px !important;
         color: #444 !important;
     }
 
-    /* 質問文字サイズ */
-    h2, .stSubheader {
-        font-size: 1.2rem !important;
-        line-height: 1.3 !important;
+    /* 質問文の見た目 */
+    .question-header {
+        text-align: center !important;
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        margin-top: 10px !important;
+        margin-bottom: 16px !important;
+        color: #333 !important;
     }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -138,7 +172,7 @@ QUESTIONS = [
                  "小さなお菓子を5個": {"温州みかん": 1}}}
 ]
 
-# 表示画像
+# 画像対応
 VARIETY_IMG = {
     "温州みかん": "citrus_images/推しみかん診断_page_温州みかん.png",
     "不知火": "citrus_images/推しみかん診断_page_不知火.png",
@@ -166,27 +200,24 @@ def reset_all():
     init_state()
 
 # ----------------------------------------------------------
-# スコア計算
+# スコア処理
 # ----------------------------------------------------------
 def compute_scores(answers_dict):
     scores = defaultdict(int)
-
     for qid, opt in answers_dict.items():
-        q = next(q for q in QUESTIONS if q["id"] == qid)
-        mapping = q["options"][opt]
+        mapping = next(q for q in QUESTIONS if q["id"] == qid)["options"][opt]
         for variety, pt in mapping.items():
             scores[variety] += pt
 
-    max_total = max(scores.values())
-    candidates = [v for v, s in scores.items() if s == max_total]
-    return random.choice(candidates)
+    maxv = max(scores.values())
+    return random.choice([v for v, s in scores.items() if s == maxv])
 
 # ----------------------------------------------------------
-# プログレスバー
+# プログレス
 # ----------------------------------------------------------
 def render_progress():
-    total = len(QUESTIONS)
     step = st.session_state.step
+    total = len(QUESTIONS)
     st.progress(step / total, text=f"進捗: {step}/{total}")
 
 # ----------------------------------------------------------
@@ -195,51 +226,56 @@ def render_progress():
 init_state()
 st.title("🍊 推しみかん診断")
 
-# ---------------- トップページ ----------------
+# トップ
 if not st.session_state.started:
-    st.write("あなたにぴったりの柑橘を診断します！")
+    st.write("あなたにぴったりの柑橘を診断します😆")
     if st.button("診断を開始する"):
         st.session_state.started = True
         st.rerun()
     st.stop()
 
-# ---------------- 質問画面 ----------------
+# 質問
 if not st.session_state.finished:
     render_progress()
     idx = st.session_state.step
-    total = len(QUESTIONS)
 
     q = QUESTIONS[idx]
-    st.subheader(f"{q['id']}  {q['q']}")
+    st.markdown(f"<div class='question-header'>{q['q']}</div>", unsafe_allow_html=True)
 
     opts = list(q["options"].keys())
     prev = st.session_state.answers.get(q["id"], None)
-    choice = st.radio("",
-                      options=opts,
-                      index=opts.index(prev) if prev in opts else None)
 
-    # ナビゲーション
+    choice = st.radio(
+        "",
+        options=opts,
+        index=opts.index(prev) if prev in opts else None
+    )
+
+    # 戻る
     if idx > 0:
         st.button("← 戻る",
-                  on_click=lambda: (setattr(st.session_state, "step", idx - 1), st.rerun()),
+                  on_click=lambda: (
+                      setattr(st.session_state, "step", idx - 1),
+                      st.rerun()
+                  ),
                   use_container_width=True)
 
-    label = "診断結果を見る" if idx + 1 == total else "次へ →"
-    st.button(label,
+    next_label = "診断結果を見る" if idx == len(QUESTIONS) - 1 else "次へ →"
+    st.button(next_label,
               disabled=(choice is None),
               on_click=lambda: (
                   st.session_state.answers.update({q["id"]: choice}),
                   setattr(st.session_state, "step", idx + 1)
-                  if idx + 1 < total
+                  if idx + 1 < len(QUESTIONS)
                   else setattr(st.session_state, "finished", True),
                   st.rerun()
               ),
               use_container_width=True)
 
-# ---------------- 結果画面 ----------------
+# 結果
 else:
     winner = compute_scores(st.session_state.answers)
-    st.success("診断完了！あなたの推しみかんは…")
+    st.success("診断完了✨あなたにぴったりの柑橘は…")
     st.header(winner)
     st.image(VARIETY_IMG[winner], use_container_width=True)
 
