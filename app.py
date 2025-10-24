@@ -122,14 +122,14 @@ QUESTIONS = [
 
 VARIETIES = ["温州みかん", "不知火", "せとか", "甘平", "甘夏", "ブラッドオレンジ"]
 
-# 結果PDF
+# PNG版 結果カード
 VARIETY_IMG = {
-    "温州みかん": "citrus_images/推しみかん診断_page_温州みかん.pdf",
-    "不知火":     "citrus_images/推しみかん診断_page_不知火.pdf",
-    "せとか":     "citrus_images/推しみかん診断_page_せとか.pdf",
-    "甘平":       "citrus_images/推しみかん診断_page_甘平.pdf",
-    "甘夏":       "citrus_images/推しみかん診断_page_甘夏.pdf",
-    "ブラッドオレンジ": "citrus_images/推しみかん診断_page_ブラッドオレンジ.pdf",
+    "温州みかん": "citrus_images/推しみかん診断_page_温州みかん.png",
+    "不知火":     "citrus_images/推しみかん診断_page_不知火.png",
+    "せとか":     "citrus_images/推しみかん診断_page_せとか.png",
+    "甘平":       "citrus_images/推しみかん診断_page_甘平.png",
+    "甘夏":       "citrus_images/推しみかん診断_page_甘夏.png",
+    "ブラッドオレンジ": "citrus_images/推しみかん診断_page_ブラッドオレンジ.png",
 }
 
 # ----------------------------------------------------------
@@ -171,17 +171,14 @@ def compute_scores(answers_dict):
         max_total = max(scores.values())
         candidates = [v for v, s in scores.items() if s == max_total]
 
-        # tie-break 1: high-point
         if len(candidates) > 1:
             max_hi = max(hi[v] for v in candidates)
             candidates = [v for v in candidates if hi[v] == max_hi]
 
-        # tie-break 2: low-point
         if len(candidates) > 1:
             max_lo = max(lo[v] for v in candidates)
             candidates = [v for v in candidates if lo[v] == max_lo]
 
-        # tie-break 3: defined order
         if len(candidates) > 1:
             for v in VARIETIES:
                 if v in candidates:
@@ -258,7 +255,7 @@ else:
         st.header(f"🎉 {winner}")
         img_path = VARIETY_IMG.get(winner)
         if img_path:
-            st.pdf(img_path)
+            st.image(img_path, use_column_width=True)
     else:
         st.warning("スコアがありません。最初からやり直してください。")
 
