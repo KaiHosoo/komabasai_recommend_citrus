@@ -8,7 +8,7 @@ import random
 st.set_page_config(page_title="推しみかん診断", page_icon="🍊", layout="centered")
 
 # ----------------------------------------------------------
-# CSS（レスポンシブ美デザイン）
+# CSS（レスポンシブ美デザイン＋中央寄せ＋スマホ最適化）
 # ----------------------------------------------------------
 st.markdown(
     """
@@ -33,56 +33,52 @@ st.markdown(
         font-weight: 800 !important;
     }
 
-    .choice-card {
-        background-color: #ffffff !important;
-        padding: 16px 12px !important;
-        border-radius: 10px !important;
-        border: 1px solid #EBEBEB !important;
-        margin-bottom: 10px !important;
-        text-align: center !important;
-        font-size: 1.05rem !important;
-    }
-
-    .choice-card:hover {
-        border-color: #FFA726 !important;
-        background-color: #FFF4E2 !important;
-    }
-
-    .stRadio > div {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-    }
-
+    /* カード風選択肢 */
     .stRadio > div > label {
-        width: 92% !important;
+        background-color: #fff !important;
+        padding: 14px 12px !important;
+        border-radius: 10px;
+        border: 1px solid #EBEBEB;
+        margin-bottom: 10px;
+        text-align: center !important;
+        font-size: 1.05rem;
+        width: 100% !important;
     }
 
-    .stButton > button {
+    .stRadio > div > label:hover {
+        background-color: #FFF4E2 !important;
+        border-color: #FFA726 !important;
+    }
+
+    /* ボタン美化 */
+    .stButton>button {
         width: 100% !important;
         background-color: #ffffff !important;
         border: 1px solid #CCC !important;
         color: #333 !important;
         border-radius: 12px !important;
         padding: 12px !important;
-        font-size: 1.1rem !important;
+        font-size: 1.05rem !important;
         margin-top: 4px !important;
     }
 
-    .stButton > button:hover {
+    .stButton>button:hover {
         background-color: #FFF3D6 !important;
         border-color: #FFA726 !important;
     }
 
+    /* プログレスバー */
     div[data-testid="stProgressBar"] > div > div {
         height: 14px !important;
         border-radius: 8px !important;
     }
 
+    /* 余計な白バー除去（Critical）*/
     div[data-testid="stProgressBar"] > div:first-child {
         display: none !important;
     }
 
+    /* プログレステキスト */
     span[data-testid="stProgressText"] {
         text-align: center !important;
         display: block !important;
@@ -91,6 +87,7 @@ st.markdown(
         color: #444 !important;
     }
 
+    /* 質問ヘッダー */
     .question-header {
         text-align: center !important;
         font-size: 1.25rem !important;
@@ -98,6 +95,7 @@ st.markdown(
         margin-top: 10px !important;
         margin-bottom: 16px !important;
         color: #333 !important;
+        line-height: 1.5 !important;
     }
 
     </style>
@@ -109,12 +107,67 @@ st.markdown(
 # 質問データ
 # ----------------------------------------------------------
 QUESTIONS = [
-    ...
-]  # ← 中略（前と同じ質問リスト）※省略せず貼りたい場合は言って！
+    {"id": "Q1", "q": "みかんを食べる時、甘さと酸味のどちらを重視しますか？",
+     "options": {"とにかく甘いのが好き": {"せとか": 2, "甘平": 2},
+                 "甘さと酸味のバランスが大事": {"温州みかん": 2, "ブラッドオレンジ": 2, "不知火": 2},
+                 "酸味強めが好き": {"甘夏": 2}}},
+    {"id": "Q2", "q": "みかんを食べるシーンといえば？",
+     "options": {"のんびりおやつに！": {"温州みかん": 2, "不知火": 2},
+                 "勉強や仕事の合間のリフレッシュ！": {"甘夏": 2, "ブラッドオレンジ": 2},
+                 "食後のデザートに！": {"せとか": 2, "甘平": 2}}},
+    {"id": "Q3", "q": "みかんを食べるときに大事なことは？",
+     "options": {"皮がむきやすいこと": {"温州みかん": 2, "不知火": 2},
+                 "香りや風味が良いこと": {"甘夏": 2, "ブラッドオレンジ": 2},
+                 "種がないこと": {"せとか": 2, "甘平": 2}}},
 
-# PNG画像
+    {"id": "Q4", "q": "みかんの見た目で惹かれるのは？",
+     "options": {"小ぶりでかわいいサイズ感": {"温州みかん": 2},
+                 "ふっくら丸くて存在感のあるもの": {"不知火": 2, "甘夏": 2, "ブラッドオレンジ": 2},
+                 "濃い色で『美味しそう！』と思えるもの": {"せとか": 2, "甘平": 2}}},
+
+    {"id": "Q5", "q": "柑橘の食べ方は？",
+     "options": {"そのままが一番！": {"温州みかん": 2, "甘平": 2},
+                 "柑橘スイーツ大好き！": {"不知火": 2, "せとか": 2},
+                 "料理に入れてみたい！": {"甘夏": 2, "ブラッドオレンジ": 2}}},
+
+    {"id": "Q6", "q": "あなたが求める人生は？",
+     "options": {"刺激のある人生": {"せとか": 1, "甘平": 1, "ブラッドオレンジ": 1},
+                 "安定な人生": {"温州みかん": 1, "不知火": 1, "甘夏": 1}}},
+
+    {"id": "Q7", "q": "好きな季節は？",
+     "options": {"春": {"甘平": 1, "ブラッドオレンジ": 1},
+                 "夏": {"甘夏": 1},
+                 "秋": {"温州みかん": 1},
+                 "冬": {"不知火": 1, "せとか": 1}}},
+    {"id": "Q8", "q": "誕生日にもらって嬉しいのは？",
+     "options": {"高級なもの": {"せとか": 1, "甘平": 1},
+                 "ユニークなもの": {"甘夏": 1, "ブラッドオレンジ": 1},
+                 "実用的なもの": {"温州みかん": 1, "不知火": 1}}},
+    {"id": "Q9", "q": "好きなタイプは？",
+     "options": {"あまあま": {"温州みかん": 1, "せとか": 1, "甘平": 1},
+                 "ツンデレ": {"不知火": 1, "甘夏": 1, "ブラッドオレンジ": 1}}},
+    {"id": "Q10", "q": "好きな空は？",
+     "options": {"青空": {"不知火": 1, "甘夏": 1},
+                 "夕焼け": {"温州みかん": 1, "せとか": 1},
+                 "星空": {"甘平": 1, "ブラッドオレンジ": 1}}},
+    {"id": "Q11", "q": "新しい友達グループに入るとき、あなたはどうする？",
+     "options": {"まずは様子を見て、少しずつ輪に入る": {"不知火": 1, "甘夏": 1},
+                 "自分から話しかけて、場を盛り上げる": {"温州みかん": 1, "せとか": 1},
+                 "特定の1人とじっくり仲良くなる": {"甘平": 1, "ブラッドオレンジ": 1}}},
+    {"id": "Q12", "q": "目の前にお菓子がたくさんあります。持って帰るなら？",
+     "options": {"大きなお菓子を1個": {"甘夏": 1, "不知火": 1},
+                 "中くらいのお菓子を3個": {"せとか": 1, "甘平": 1, "ブラッドオレンジ": 1},
+                 "小さなお菓子を5個": {"温州みかん": 1}}}
+]
+
+# 結果画像
 VARIETY_IMG = {
-    ...
+    "温州みかん": "citrus_images/推しみかん診断_page_温州みかん.png",
+    "不知火": "citrus_images/推しみかん診断_page_不知火.png",
+    "せとか": "citrus_images/推しみかん診断_page_せとか.png",
+    "甘平": "citrus_images/推しみかん診断_page_甘平.png",
+    "甘夏": "citrus_images/推しみかん診断_page_甘夏.png",
+    "ブラッドオレンジ": "citrus_images/推しみかん診断_page_ブラッドオレンジ.png",
 }
 
 # ----------------------------------------------------------
@@ -135,7 +188,7 @@ def reset_all():
     init_state()
 
 # ----------------------------------------------------------
-# スコア処理
+# スコア処理（同点ランダム）
 # ----------------------------------------------------------
 def compute_scores(answers_dict):
     scores = defaultdict(int)
@@ -160,20 +213,25 @@ def render_progress():
 init_state()
 st.title("🍊 推しみかん診断")
 
-# トップ
+# ----------------------------------------
+# トップページ
+# ----------------------------------------
 if not st.session_state.started:
     st.write("あなたにぴったりの柑橘を診断します😆")
     if st.button("診断を開始する"):
         st.session_state.started = True
     st.stop()
 
-# 質問フェーズ
+# ----------------------------------------
+# 質問ページ
+# ----------------------------------------
 if not st.session_state.finished:
     render_progress()
     idx = st.session_state.step
     q = QUESTIONS[idx]
 
-    st.markdown(f'<div class="question-header">{q["q"]}</div>', unsafe_allow_html=True)
+    question_text = q["q"]
+    st.markdown(f'<div class="question-header">{question_text}</div>', unsafe_allow_html=True)
 
     opts = list(q["options"].keys())
     choice = st.radio("", options=opts)
@@ -183,7 +241,7 @@ if not st.session_state.finished:
         if st.button("← 戻る"):
             st.session_state.step -= 1
 
-    # 次へ or 結果
+    # 次へ / 結果へ
     label = "診断結果を見る" if idx == len(QUESTIONS) - 1 else "次へ →"
     if st.button(label, disabled=(choice is None)):
         st.session_state.answers[q["id"]] = choice
@@ -192,7 +250,9 @@ if not st.session_state.finished:
         else:
             st.session_state.finished = True
 
-# 結果
+# ----------------------------------------
+# 結果ページ
+# ----------------------------------------
 else:
     winner = compute_scores(st.session_state.answers)
     st.success("診断完了✨あなたにぴったりの柑橘は…")
