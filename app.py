@@ -8,7 +8,7 @@ import random
 st.set_page_config(page_title="推しみかん診断", page_icon="🍊", layout="centered")
 
 # ----------------------------------------------------------
-# CSS（スマホ最適化＋動き付きUI）
+# CSS（slide-out-left 追加）
 # ----------------------------------------------------------
 st.markdown(
     """
@@ -29,13 +29,22 @@ st.markdown(
         animation: fadeIn 0.3s ease-out;
     }
 
-    /* フェードイン (#10) */
+    /* 基本フェードイン */
     @keyframes fadeIn {
         0% {opacity: 0; transform: translateY(8px);}
         100% {opacity: 1; transform: translateY(0);}
     }
 
-    /* 選択肢デザイン */
+    /* ✅ slide-out-left（今回追加） */
+    @keyframes slideLeft {
+        0% {opacity: 1; transform: translateX(0);}
+        100% {opacity: 0; transform: translateX(-60px);}
+    }
+
+    .slide-out-left {
+        animation: slideLeft 0.35s ease-in-out forwards;
+    }
+
     .stRadio > div > label {
         background-color: #ffffff !important;
         padding: 13px 10px !important;
@@ -53,13 +62,11 @@ st.markdown(
         border-color: #FFA726 !important;
     }
 
-    /* 押下感 (#5) */
     .stRadio > div > label:active {
         transform: scale(0.96) !important;
         background-color: #FFECC8 !important;
     }
 
-    /* ボタンの押し心地 */
     .stButton>button {
         width: 100% !important;
         background-color: #ffffff !important;
@@ -79,7 +86,6 @@ st.markdown(
         border-color: #FF9800 !important;
     }
 
-    /* 結果画像 zoom (#7) */
     .zoom-in {
         animation: zoomIn 0.45s ease-out forwards;
     }
@@ -88,7 +94,16 @@ st.markdown(
         100% {transform: scale(1.0); opacity:1;}
     }
 
-    /* プログレスバー */
+    .question-header {
+        text-align: center!important;
+        font-size: 1.2rem!important;
+        font-weight: 700!important;
+        margin-top: 8px!important;
+        margin-bottom: 14px!important;
+        color: #333!important;
+        line-height:1.4;
+    }
+
     div[data-testid="stProgressBar"] > div > div {
         height: 14px !important;
         border-radius: 8px !important;
@@ -104,17 +119,6 @@ st.markdown(
         display:block;
     }
 
-    .question-header {
-        text-align: center!important;
-        font-size: 1.2rem!important;
-        font-weight: 700!important;
-        margin-top: 8px!important;
-        margin-bottom: 14px!important;
-        color: #333!important;
-        line-height:1.4;
-    }
-
-    /* success枠透明化 */
     div[data-testid="stNotification"] {
         background-color:transparent!important;
         border:none!important;
@@ -127,19 +131,7 @@ st.markdown(
 )
 
 # ----------------------------------------------------------
-# 性格コメント (#13)
-# ----------------------------------------------------------
-PROFILE_COMMENT = {
-    "温州みかん": "バランス感覚が良く、安心感のあるムードメーカー🍊",
-    "不知火": "芯が強く、頼れるリーダー気質🔥",
-    "せとか": "上品な雰囲気で周囲を惹きつける特別な存在✨",
-    "甘平": "ふんわり優しい癒しキャラ☺️",
-    "甘夏": "冒険好きなアクティブチャレンジャー🌟",
-    "ブラッドオレンジ": "ミステリアスで独創的。こだわりあるアーティスト🎨",
-}
-
-# ----------------------------------------------------------
-# 質問データ
+# 質問データ（省略せず記載）
 # ----------------------------------------------------------
 QUESTIONS = [
     {"id": "Q1", "q": "みかんを食べる時、甘さと酸味のどちらを重視しますか？",
@@ -192,7 +184,7 @@ QUESTIONS = [
 ]
 
 # ----------------------------------------------------------
-# 結果カード画像
+# 画像
 # ----------------------------------------------------------
 VARIETY_IMG = {
     "温州みかん": "citrus_images/推しみかん診断_page_温州みかん.png",
@@ -204,7 +196,7 @@ VARIETY_IMG = {
 }
 
 # ----------------------------------------------------------
-# セッション初期化
+# セッション
 # ----------------------------------------------------------
 def init_state():
     if "step" not in st.session_state:
@@ -215,13 +207,15 @@ def init_state():
         st.session_state.finished = False
     if "started" not in st.session_state:
         st.session_state.started = False
+    if "anim" not in st.session_state:
+        st.session_state.anim = ""
 
 def reset_all():
     st.session_state.clear()
     init_state()
 
 # ----------------------------------------------------------
-# スコア計算（同点の場合ランダム）
+# スコア計算（同点ランダム）
 # ----------------------------------------------------------
 def compute_scores(answers_dict):
     scores = defaultdict(int)
@@ -241,40 +235,42 @@ def render_progress():
     st.progress(step / total, text=f"進捗: {step}/{total}")
 
 # ----------------------------------------------------------
-# UI開始処理
+# UI開始
 # ----------------------------------------------------------
 init_state()
 st.title("推しみかん診断")
 
-# -------------------- トップページ --------------------
+# -------------------- トップ --------------------
 if not st.session_state.started:
-    st.write("12個の質問で、あなたにぴったりの『推しみかん』を見つけましょう！🍊")
+    st.write("12個の質問で、あなたにぴったりの『推しみかん』を診断します！🍊")
 
-    # 中央揃え
     col = st.columns([1,2,1])[1]
     with col:
         if st.button("診断を開始する"):
             st.session_state.started = True
     st.stop()
 
-# -------------------- 質問ページ --------------------
+# -------------------- 質問 --------------------
 if not st.session_state.finished:
     render_progress()
     idx = st.session_state.step
     q = QUESTIONS[idx]
 
+    # ✅ wrap 質問にスライドクラス付与
+    st.markdown(f'<div class="{st.session_state.anim}">', unsafe_allow_html=True)
     st.markdown(f'<div class="question-header">{q["q"]}</div>', unsafe_allow_html=True)
 
     opts = list(q["options"].keys())
     choice = st.radio("", options=opts, index=None, key=f"q{idx}")
 
-    # 横並び
     col1, col2 = st.columns(2)
 
     if idx > 0:
         with col1:
             if st.button("← 戻る"):
+                st.session_state.anim = "slide-out-left"
                 st.session_state.step -= 1
+                st.rerun()
 
     with col2:
         label = "診断結果を見る" if idx == len(QUESTIONS) - 1 else "次へ →"
@@ -282,21 +278,24 @@ if not st.session_state.finished:
             if choice:
                 st.session_state.answers[q["id"]] = choice
                 if idx + 1 < len(QUESTIONS):
+                    st.session_state.anim = "slide-out-left"
                     st.session_state.step += 1
+                    st.rerun()
                 else:
                     st.session_state.finished = True
 
-# -------------------- 結果ページ --------------------
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# -------------------- 結果 --------------------
 else:
     winner = compute_scores(st.session_state.answers)
 
-    st.markdown("### 診断完了しました！あなたにぴったりの柑橘は…")
+    st.markdown("### 診断完了しました！あなたにおすすめの柑橘は…")
     st.header(winner)
 
     st.markdown('<div class="zoom-in">', unsafe_allow_html=True)
     st.image(VARIETY_IMG[winner], use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
-
 
     with st.expander("あなたの回答一覧を見る"):
         for q in QUESTIONS:
@@ -307,3 +306,4 @@ else:
 
     if st.button("もう一度診断する"):
         reset_all()
+        st.rerun()
