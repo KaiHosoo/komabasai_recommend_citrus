@@ -244,11 +244,11 @@ def render_progress():
 # UI開始処理
 # ----------------------------------------------------------
 init_state()
-st.title("🍊 推しみかん診断")
+st.title("推しみかん診断")
 
 # -------------------- トップページ --------------------
 if not st.session_state.started:
-    st.write("12個の質問で、あなたにぴったりの『推しみかん』を見つけましょう！🍊✨")
+    st.write("12個の質問で、あなたにぴったりの『推しみかん』を見つけましょう！🍊")
 
     # 中央揃え
     col = st.columns([1,2,1])[1]
@@ -290,17 +290,15 @@ if not st.session_state.finished:
 else:
     winner = compute_scores(st.session_state.answers)
 
-    st.markdown("### 🎉 診断完了！あなたにぴったりの柑橘は…")
+    st.markdown("### 診断完了しました！あなたにぴったりの柑橘は…")
     st.header(winner)
 
     st.markdown('<div class="zoom-in">', unsafe_allow_html=True)
     st.image(VARIETY_IMG[winner], use_container_width=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.subheader("🍊 あなたの味覚性格")
-    st.write(PROFILE_COMMENT[winner])
 
-    with st.expander("あなたの回答一覧 👀"):
+    with st.expander("あなたの回答一覧を見る"):
         for q in QUESTIONS:
             ans = st.session_state.answers.get(q["id"], "-")
             st.write(f"**{q['id']}｜{q['q']}**")
