@@ -8,7 +8,7 @@ import random
 st.set_page_config(page_title="推しみかん診断", page_icon="🍊", layout="centered")
 
 # ----------------------------------------------------------
-# CSS（レスポンシブ美デザイン＋中央揃え＋スマホ最適化）
+# CSS（スマホ最適化＋動き付きUI）
 # ----------------------------------------------------------
 st.markdown(
     """
@@ -20,16 +20,22 @@ st.markdown(
         font-family: "Helvetica Neue", sans-serif;
     }
 
-    /* 全体コンテナ（中央寄せ＆スマホ最適化） */
     .stApp {
-        padding: 16px 12px !important;
+        padding: 12px 10px !important;
         background-color: #FFF9ED;
-        max-width: 520px;
+        max-width: 500px;
         margin-left: auto;
         margin-right: auto;
+        animation: fadeIn 0.3s ease-out;
     }
 
-    /* 選択肢（カード風） */
+    /* フェードイン (#10) */
+    @keyframes fadeIn {
+        0% {opacity: 0; transform: translateY(8px);}
+        100% {opacity: 1; transform: translateY(0);}
+    }
+
+    /* 選択肢デザイン */
     .stRadio > div > label {
         background-color: #ffffff !important;
         padding: 13px 10px !important;
@@ -39,6 +45,7 @@ st.markdown(
         text-align: center !important;
         font-size: 1rem;
         width: 100% !important;
+        transition: 0.13s ease-in-out !important;
     }
 
     .stRadio > div > label:hover {
@@ -46,82 +53,90 @@ st.markdown(
         border-color: #FFA726 !important;
     }
 
-    /* ボタン（上下広がり改善） */
-        .stButton>button {
+    /* 押下感 (#5) */
+    .stRadio > div > label:active {
+        transform: scale(0.96) !important;
+        background-color: #FFECC8 !important;
+    }
+
+    /* ボタンの押し心地 */
+    .stButton>button {
         width: 100% !important;
         background-color: #ffffff !important;
         border: 2px solid #FFA726 !important;
         color: #333 !important;
         border-radius: 12px !important;
-        padding: 12px !important;
-        font-size: 1.05rem !important;
-        margin-top: 5px !important;
-        margin-bottom: 6px !important;
+        padding: 11px !important;
+        font-size: 1rem !important;
         cursor: pointer !important;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.15) !important;
-        transition: 0.12s ease-in-out !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+        transition: 0.15s ease !important;
     }
 
-    /* ホバー時：ふわっと明るく */
-    .stButton>button:hover {
-        background-color: #FFF3D6 !important;
-        transform: translateY(-2px) !important;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.20) !important;
-        border-color: #FF8A00 !important;
-    }
-
-    /* 押したとき：沈む感じ */
     .stButton>button:active {
-        transform: translateY(1px) !important;
-        box-shadow: 0 2px 3px rgba(0,0,0,0.12) !important;
-        background-color: #FFE9C4 !important;
-        border-color: #F57C00 !important;
+        transform: scale(0.95) !important;
+        background-color: #FFE0B2 !important;
+        border-color: #FF9800 !important;
     }
 
-    /* プログレスバー太く */
+    /* 結果画像 zoom (#7) */
+    .zoom-in {
+        animation: zoomIn 0.45s ease-out forwards;
+    }
+    @keyframes zoomIn {
+        0% {transform: scale(0.7); opacity:0.3;}
+        100% {transform: scale(1.0); opacity:1;}
+    }
+
+    /* プログレスバー */
     div[data-testid="stProgressBar"] > div > div {
         height: 14px !important;
         border-radius: 8px !important;
     }
-
-    /* 謎の白バー除去 */
     div[data-testid="stProgressBar"] > div:first-child {
-        display: none !important;
+        display:none !important;
     }
-
-    /* テキスト整形 */
     span[data-testid="stProgressText"] {
-        text-align: center !important;
-        display: block !important;
-        font-size: 0.92rem;
-        margin-bottom: 3px !important;
-        color: #444 !important;
+        text-align:center!important;
+        font-size:0.9rem;
+        color:#444;
+        margin-bottom:4px!important;
+        display:block;
     }
 
-    /* 質問文 */
     .question-header {
-        text-align: center !important;
-        font-size: 1.2rem !important;
-        font-weight: 700 !important;
-        margin-top: 6px !important;
-        margin-bottom: 12px !important;
-        color: #333 !important;
-        line-height: 1.4 !important;
+        text-align: center!important;
+        font-size: 1.2rem!important;
+        font-weight: 700!important;
+        margin-top: 8px!important;
+        margin-bottom: 14px!important;
+        color: #333!important;
+        line-height:1.4;
     }
 
-    /* 背景が緑になる success を透明に */
+    /* success枠透明化 */
     div[data-testid="stNotification"] {
-        background-color: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        color: #333 !important;
+        background-color:transparent!important;
+        border:none!important;
+        box-shadow:none!important;
+        color:#333!important;
     }
-
     </style>
     """,
     unsafe_allow_html=True
 )
 
+# ----------------------------------------------------------
+# 性格コメント (#13)
+# ----------------------------------------------------------
+PROFILE_COMMENT = {
+    "温州みかん": "バランス感覚が良く、安心感のあるムードメーカー🍊",
+    "不知火": "芯が強く、頼れるリーダー気質🔥",
+    "せとか": "上品な雰囲気で周囲を惹きつける特別な存在✨",
+    "甘平": "ふんわり優しい癒しキャラ☺️",
+    "甘夏": "冒険好きなアクティブチャレンジャー🌟",
+    "ブラッドオレンジ": "ミステリアスで独創的。こだわりあるアーティスト🎨",
+}
 
 # ----------------------------------------------------------
 # 質問データ
@@ -168,7 +183,7 @@ QUESTIONS = [
                  "星空": {"甘平": 1, "ブラッドオレンジ": 1}}},
     {"id": "Q11", "q": "新しい友達グループに入るとき、あなたはどうする？",
      "options": {"まずは様子を見て、少しずつ輪に入る": {"不知火": 1, "甘夏": 1},
-                 "自分から話しかけて、場を盛り上げる": {"温州みかん": 1, "せとか": 1},
+                 "自分から話しかけて場を盛り上げる": {"温州みかん": 1, "せとか": 1},
                  "特定の1人とじっくり仲良くなる": {"甘平": 1, "ブラッドオレンジ": 1}}},
     {"id": "Q12", "q": "目の前にお菓子がたくさんあります。持って帰るなら？",
      "options": {"大きなお菓子を1個": {"甘夏": 1, "不知火": 1},
@@ -176,7 +191,9 @@ QUESTIONS = [
                  "小さなお菓子を5個": {"温州みかん": 1}}}
 ]
 
+# ----------------------------------------------------------
 # 結果カード画像
+# ----------------------------------------------------------
 VARIETY_IMG = {
     "温州みかん": "citrus_images/推しみかん診断_page_温州みかん.png",
     "不知火": "citrus_images/推しみかん診断_page_不知火.png",
@@ -187,7 +204,7 @@ VARIETY_IMG = {
 }
 
 # ----------------------------------------------------------
-# セッション管理
+# セッション初期化
 # ----------------------------------------------------------
 def init_state():
     if "step" not in st.session_state:
@@ -204,7 +221,7 @@ def reset_all():
     init_state()
 
 # ----------------------------------------------------------
-# スコア処理（同点はランダム）
+# スコア計算（同点の場合ランダム）
 # ----------------------------------------------------------
 def compute_scores(answers_dict):
     scores = defaultdict(int)
@@ -224,29 +241,23 @@ def render_progress():
     st.progress(step / total, text=f"進捗: {step}/{total}")
 
 # ----------------------------------------------------------
-# UI開始
+# UI開始処理
 # ----------------------------------------------------------
 init_state()
-st.title("推しみかん診断")
+st.title("🍊 推しみかん診断")
 
-# ----------------------------------------
-# トップページ
-# ----------------------------------------
+# -------------------- トップページ --------------------
 if not st.session_state.started:
-    st.write(
-        "あなたにぴったりの柑橘を診断します！\n\n"
-        "12個の質問に答えて、あなただけの『推しみかん』を見つけましょう🍊"
-    )
+    st.write("12個の質問で、あなたにぴったりの『推しみかん』を見つけましょう！🍊✨")
 
-    c1, c2, c3 = st.columns([1,2,1])
-    with c2:
+    # 中央揃え
+    col = st.columns([1,2,1])[1]
+    with col:
         if st.button("診断を開始する"):
             st.session_state.started = True
     st.stop()
 
-# ----------------------------------------
-# 質問ページ
-# ----------------------------------------
+# -------------------- 質問ページ --------------------
 if not st.session_state.finished:
     render_progress()
     idx = st.session_state.step
@@ -255,37 +266,41 @@ if not st.session_state.finished:
     st.markdown(f'<div class="question-header">{q["q"]}</div>', unsafe_allow_html=True)
 
     opts = list(q["options"].keys())
-    prev = st.session_state.answers.get(q["id"], None)
     choice = st.radio("", options=opts, index=None, key=f"q{idx}")
 
+    # 横並び
     col1, col2 = st.columns(2)
 
-    with col1:
-        if idx > 0:
+    if idx > 0:
+        with col1:
             if st.button("← 戻る"):
                 st.session_state.step -= 1
 
-    label = "診断結果を見る" if idx == len(QUESTIONS) - 1 else "次へ →"
     with col2:
+        label = "診断結果を見る" if idx == len(QUESTIONS) - 1 else "次へ →"
         if st.button(label, disabled=(choice is None)):
-            if choice is not None:
+            if choice:
                 st.session_state.answers[q["id"]] = choice
                 if idx + 1 < len(QUESTIONS):
                     st.session_state.step += 1
                 else:
                     st.session_state.finished = True
 
-# ----------------------------------------
-# 結果ページ
-# ----------------------------------------
+# -------------------- 結果ページ --------------------
 else:
     winner = compute_scores(st.session_state.answers)
 
-    st.markdown("### 診断完了！\nあなたにぴったりの柑橘は…")
+    st.markdown("### 🎉 診断完了！あなたにぴったりの柑橘は…")
     st.header(winner)
-    st.image(VARIETY_IMG[winner], use_container_width=True)
 
-    with st.expander("あなたの回答一覧を見る 👀"):
+    st.markdown('<div class="zoom-in">', unsafe_allow_html=True)
+    st.image(VARIETY_IMG[winner], use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.subheader("🍊 あなたの味覚性格")
+    st.write(PROFILE_COMMENT[winner])
+
+    with st.expander("あなたの回答一覧 👀"):
         for q in QUESTIONS:
             ans = st.session_state.answers.get(q["id"], "-")
             st.write(f"**{q['id']}｜{q['q']}**")
