@@ -5,7 +5,20 @@ import random
 # ----------------------------------------------------------
 # ページ設定
 # ----------------------------------------------------------
-st.set_page_config(page_title="推しみかん診断", page_icon="🍊", layout="centered")
+st.set_page_config(
+    page_title="推しみかん診断",
+    page_icon="🍊",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+    theme={
+        "base": "light",  # 🌞 ここでライトテーマを強制
+        "primaryColor": "#FFA726",  # オレンジ系のアクセントカラー
+        "backgroundColor": "#FFF9ED",  # 背景色（淡いクリーム）
+        "secondaryBackgroundColor": "#FFFFFF",  # コンテンツ背景
+        "textColor": "#333333",  # 読みやすい文字色
+        "font": "sans serif"
+    }
+)
 
 # ----------------------------------------------------------
 # CSS（slide-out-left 追加）
